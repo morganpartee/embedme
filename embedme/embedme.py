@@ -19,8 +19,23 @@ class Embedme:
             "embedding"
         ]
 
+    def add(self, data, save=True):
+        name = data["name"]
+        embeddings = self.get_embedding(data["text"])
+
+        self.add_vectors(name=name, vectors=embeddings, meta=data)
+
+        if save:
+            self.save()
+
     def add_vectors(self, name, vectors, meta):
         self.data[name] = {"vectors": vectors, "meta": meta}
+        # Remove the prebuild array when we add new stuff
+        self.vectors = None
+
+    def search(self, text):
+        embeddings = self.get_embedding(text)
+        return self.search_vectors(embeddings)
 
     def prepare_search(self):
         if self.vectors is None:
@@ -30,19 +45,28 @@ class Embedme:
         self.prepare_search()
         distances = np.dot(self.vectors, vector)
         top_indices = np.argsort(distances)[::-1][:top_n]
-        return [self.data[name]["meta"] for name in self.data.keys()][top_indices]
+        names = [name for name in self.data.keys()]
 
-    def save_data(self, data, name):
-        np.save(f"{self.data_folder}/{name}.npy", data)
-        with open(f"{self.data_folder}/{name}.json", "w") as f:
-            json.dump(data.tolist(), f)
+        # Remove vectors
+        return [
+            {
+                k: v
+                for i in top_indices
+                for k, v in self.data[names[i]].items()
+                if k != "vectors"
+            }
+        ]
 
-    def load_data(self, name):
-        data = np.load(f"{self.data_folder}/{name}.npy")
-        with open(f"{self.data_folder}/{name}.json", "r") as f:
-            metadata = json.load(f)
-        return data, metadata
+    def save(self):
+        np.save(f"{self.data_folder}/embed.npy", self.vectors)
+        with open(f"{self.data_folder}/embed.json", "w") as f:
+            json.dump(self.data, f)
 
-    def delete_data(self, name):
-        os.remove(f"{self.data_folder}/{name}.npy")
-        os.remove(f"{self.data_folder}/{name}.json")
+    def load(self):
+        self.vectors = np.load(f"{self.data_folder}/embed.npy", allow_pickle=True)
+        with open(f"{self.data_folder}/embed.json", "r") as f:
+            self.data = json.load(f)
+
+    def delete(self):
+        os.remove(f"{self.data_folder}/embed.npy")
+        os.remove(f"{self.data_folder}/embed.json")

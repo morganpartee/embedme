@@ -1,14 +1,16 @@
-Embedme
+# Embedme
+
 Embedme is a python module that allows you to easily use embeddings from text fields with OpenAI's Embedding API and store them in a local folder.
 
-Installation
+## Installation
+
 To install Embedme, you can use pip:
 
 ```sh
 pip install embedme
 ```
 
-## Usage
+## Useage
 
 Embedme provides a simple interface to use embeddings from text fields with OpenAI's Embedding API and store them in a local folder.
 
@@ -17,7 +19,9 @@ Check out the example notebook for a better example, but useage is something lik
 ```py
 import openai
 import nltk
+from more_itertools import chunked
 from embedme import Embedme
+from tqdm import tqdm
 
 # Downloading the NLTK corpus
 nltk.download('gutenberg')
@@ -25,19 +29,28 @@ nltk.download('gutenberg')
 # Creating an instance of the Embedme class
 embedme = Embedme(data_folder='.embedme', model="text-embedding-ada-002")
 
-# Getting the embeddings for the text
+# Getting the text
 text = nltk.corpus.gutenberg.raw('melville-moby_dick.txt')
-embeddings = embedme.get_embedding(text)
 
-# Adding the embeddings to the Embedme instance
-embedme.add_vectors(name='moby_dick', vectors=embeddings, meta={'text': 'Moby Dick by Herman Melville'})
+# Splitting the text into sentences
+sentences = nltk.sent_tokenize(text)
 
-# Searching the vectors
-result = embedme.search_vectors(embeddings)
+input("Hey this call will cost you money and take a minute. Like, a few cents probably, but wanted to warn you.")
 
-# Printing the result
-print(result)
+for i, chunk in enumerate(tqdm(chunked(sentences, 20))):
+    data = {'name': f'moby_dick_chunk_{i}', 'text': ' '.join(chunk)}
+    embedme.add(data, save=False)
+
+embedme.save()
 ```
+
+And to search:
+
+```py
+embedme.search("lessons")
+```
+
+You can do anything you would want to with `.vectors` after you call `.prepare_search()` (or... search something, it's automatic mostly), like plot clusters, etc.
 
 ## Follow Us
 
