@@ -38,7 +38,7 @@ class Embedme:
         return self.search_vectors(embeddings)
 
     def prepare_search(self):
-        if self.vectors is None:
+        if self.vectors is None or self.vectors.shape[0] != len(self.data):
             self.vectors = np.stack([data["vectors"] for data in self.data.values()])
 
     def search_vectors(self, vector, top_n=10):
@@ -58,15 +58,12 @@ class Embedme:
         ]
 
     def save(self):
-        np.save(f"{self.data_folder}/embed.npy", self.vectors)
         with open(f"{self.data_folder}/embed.json", "w") as f:
             json.dump(self.data, f)
 
     def load(self):
-        self.vectors = np.load(f"{self.data_folder}/embed.npy", allow_pickle=True)
         with open(f"{self.data_folder}/embed.json", "r") as f:
             self.data = json.load(f)
 
     def delete(self):
-        os.remove(f"{self.data_folder}/embed.npy")
         os.remove(f"{self.data_folder}/embed.json")
