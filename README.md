@@ -2,6 +2,8 @@
 
 Embedme is a python module that allows you to easily use embeddings from text fields with OpenAI's Embedding API and store them in a local folder.
 
+It's like a lazy version of pinecone - Numpy is actually pretty fast for embeddings stuff at smaller scale, why overthink stuff? We store the data and vectors as json and build the numpy array before you search (and store it until you add more)
+
 ## Installation
 
 To install Embedme, you can use pip:
@@ -10,7 +12,13 @@ To install Embedme, you can use pip:
 pip install embedme
 ```
 
-## Useage
+## Setup
+
+The only thing you _must_ do before you use `embedme` is setup auth with OpenAI. We use it to embed your items and search queries, so it is required. I don't want to touch **any** of that code - just sign in how they tell you to, either in the script via a file for the key, or an environment variable for your key.
+
+[OpenAI Python Module (With Auth Instructions)](https://github.com/openai/openai-python)
+
+## Usage
 
 Embedme provides a simple interface to use embeddings from text fields with OpenAI's Embedding API and store them in a local folder.
 

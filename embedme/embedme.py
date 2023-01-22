@@ -33,9 +33,9 @@ class Embedme:
         # Remove the prebuild array when we add new stuff
         self.vectors = None
 
-    def search(self, text):
+    def search(self, text, n=3):
         embeddings = self.get_embedding(text)
-        return self.search_vectors(embeddings)
+        return self.search_vectors(embeddings, top_n=n)
 
     def prepare_search(self):
         if self.vectors is None or self.vectors.shape[0] != len(self.data):
@@ -48,14 +48,10 @@ class Embedme:
         names = [name for name in self.data.keys()]
 
         # Remove vectors
-        return [
-            {
-                k: v
-                for i in top_indices
-                for k, v in self.data[names[i]].items()
-                if k != "vectors"
-            }
-        ]
+        return {
+            names[i]: {k: v for k, v in self.data[names[i]].items() if k != "vectors"}
+            for i in top_indices
+        }
 
     def save(self):
         with open(f"{self.data_folder}/embed.json", "w") as f:
